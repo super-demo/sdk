@@ -55,12 +55,24 @@ class SuperAppSDK {
    * Register a Mini-App with retry logic
    * @param appName Name of the mini-app
    * @param functions List of function names the mini-app provides
+   * @param appURL Base URL where the mini-app can be reached
    * @returns Promise resolving when registration succeeds
    */
-  async register(appName: string, functions: string[]): Promise<void> {
+  async register(
+    appName: string,
+    functions: string[],
+    appURL: string
+  ): Promise<void> {
+    // Make sure the URL doesn't end with a slash
+    if (appURL.length > 0 && appURL.endsWith("/")) {
+      appURL = appURL.slice(0, -1)
+    }
+
+    // Send my URL to the Super App
     const payload = {
       appName,
-      functions
+      functions,
+      url: appURL
     }
 
     let lastError: Error | null = null
@@ -100,7 +112,6 @@ class SuperAppSDK {
 
   /**
    * Call another Mini-App's function
-   * @param url URL for the function call
    * @param caller Name of the calling app
    * @param targetApp Name of the target app
    * @param functionName Name of the function to call
@@ -108,14 +119,12 @@ class SuperAppSDK {
    * @returns Promise resolving to the function result
    */
   async callFunction(
-    url: string,
     caller: string,
     targetApp: string,
     functionName: string,
     payload: Record<string, any>
   ): Promise<Record<string, any>> {
     const requestBody = {
-      url,
       caller,
       targetApp,
       functionName,
